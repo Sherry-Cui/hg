@@ -60,10 +60,12 @@ save(sample.integrated,file = "sample.integrated.RData")
 
 ######## sup_figure7 UMAP 
 col=pal_igv('default',alpha = 1)(51)
-p1 <- DimPlot(sample.integrated, reduction = "umap", group.by = "day",label = F,raster=FALSE)+ scale_color_manual(values = col[35:51])
-p2 <- DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",label = F,raster=FALSE)+ scale_color_manual(values = col)
+p1 <- DimPlot(sample.integrated, reduction = "umap", group.by = "day",label = F,raster=FALSE,cols = col[35:51])
+p2 <- DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",label = F,raster=FALSE,cols = col)
 p1|p2
 
+######## figure3 UMAP by days
+DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",split.by = 'day',label = F,raster=FALSE,cols = col)
 
 ######## figure3 cell ratio image
 Cellratio <- prop.table(table(sample.integrated$cell.type, sample.integrated$day), margin = 2)
@@ -91,7 +93,8 @@ gene <- c('POU5F1','NANOG', #hPSC
           'SST','GHRL')#Enteroendocrine
 DotPlot(sample.integrated, features =gene,cols = c("lightgrey",'#FF0000'))+ RotatedAxis() 
 
-
+######## sup_figure7 featureplot
+FeaturePlot(sample.integrated,features = c('EPCAM','PAX6','COL3A1'),cols = c('lightgrey','red'),ncol = 3,label = F)
 
 ######## subset epithelial cells 
 dt = sample.integrated[, sample.integrated$cell.type %in% "Epithelium" ]
@@ -116,12 +119,16 @@ counts <- FindClusters(counts,resolution = 0.4, verbose = F)
 counts <- FindClusters(counts,resolution = 0.1, verbose = F)
 counts <- FindClusters(counts,resolution = 0.3, verbose = F)
 counts <- FindClusters(counts,resolution = 0.2, verbose = F)
-gene <- c('PDX1','GAST','MUC5AC','CLDN18','MUC6','KLF5',# Antrum
-          'ATP4B','ATP4A','PGA3','PGC','IRX2','IRX3','IRX5','BHLHA15','MUC2','GHRL',# Fundus
-          'TFF2','TFF1','TFF3')# gland                                
-DefaultAssay(counts) <- 'RNA'
-DotPlot(counts, features =gene,cols = c("lightgrey",'#FF0000'))+ RotatedAxis() 
-DimPlot(counts, group.by = "cell.type",label = T,cols = col)
+
+######## sup_figure9 dotplot 
+gene <- c('TFF2','TFF1',# gland
+           'CLDN18','KLF5','PDX1',# antral
+           'GATA4','SOX2',
+           'IRX2','IRX3','IRX5')# fundus 
+DotPlot(counts, features =gene,cols = c("lightgrey",'#FF0000'),group.by = 'lab')+ RotatedAxis() +coord_flip()
+
+######## figure5 UMAP
+DimPlot(counts, group.by = "cell.type",label = T,cols = col) 
 
 
 Cellratio <- prop.table(table(counts$cell.type, counts$day), margin = 2)

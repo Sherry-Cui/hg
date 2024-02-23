@@ -33,7 +33,7 @@ VlnPlot(sce, features = c('COL6A1','FN1','FBLN1','LAMA4','FBN2','LAMB1',
                                   'COL1A1','EFEMP1','COL1A2','BGN','COL2A1','COL3A1'),
         pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
 VlnPlot(sce, features = c('RSPO3','WNT5A','CXCL12'),pt.size = 0,assay = 'RNA',
-        cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+        cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend() 
 # ECM genes 
 highlight <- read_excel('highlight.xlsx') 
 DefaultAssay(sce) <- 'RNA'
@@ -118,9 +118,9 @@ VlnPlot(sce, features = c('COL1A2','FBLN1','COL4A6','COL4A2','LAMC1','MATN2',
                           'FBLN2','COL12A1','FN1','COL18A1','LAMB1','HSPG2','COL2A1','VTN','VCAN'),pt.size = 0,assay = 'RNA',cols = col,ncol = 5)
 VlnPlot(sce, features = c('POU5F1','SOX17', 'GATA4', 'SOX2', 'NKX2-2'),pt.size = 0,
         assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell.type',split.by = 'cell.type')+NoLegend()
-VlnPlot(sce, features = c('COL1A2','FBLN1','COL4A6','COL4A2','LAMC1','MATN2',
-                          'FBLN2','FN1','COL18A1','LAMB1','HSPG2','COL2A1','VTN','VCAN'),
-        pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell.type',split.by = 'cell.type')+NoLegend()
+VlnPlot(epi, features = c('BMP2','BMP7','FGF2','FGF13','FGF14','IGF2'),pt.size = 0,
+        assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'new.cell.type',split.by = 'new.cell.type')+NoLegend()
+
 # ECM genes 
 highlight <- read_excel('highlight.xlsx') 
 DefaultAssay(sce) <- 'RNA'
@@ -296,7 +296,7 @@ dotplot(bp) + theme(axis.text.x = element_text(
         vjust = 0.5, hjust = 0.5
 ))
 
-######## figure5 URD on D16 epithelial cells ------------------------------
+######## figure5 URD on day 16 epithelial cells ------------------------------
 d16 <- epiremovegland[, epiremovegland$day %in% "D16" ] 
 d16$cell.type <- ordered(d16$cell.type,levels = c("Fundus#1","Fundus#2","Antrum#1","Antrum#2","Antrum#3"))
 
@@ -337,14 +337,34 @@ pdata <- pData(cds_sub)
 pdata$cell <- rownames(pdata)
 mg <- full_join(pdata,pse,by = 'cell')
 pData(cds_sub)$Pseudotime <- mg$pseudotime
+
+## figure5 HOX gene heatmap
 gene <- c('HOXA-AS3','HOXB6','HOXD-AS2','HOXA7','HOXB-AS3','HOXD3','HOXD1','HOXD4','HOXB1','HOXB9','HOXB-AS1','HOXC6',
           'HOXD9','HOXA1','HOXB8','HOXA5','HOXC4','HOXA4','HOXB5','HOXB4',
           'HOXA2','HOXB2','HOXA3','HOXB3','HOXB7','HOXA-AS2','HOXC5')
 pseudotime_de <- differentialGeneTest(cds_sub[gene,], fullModelFormulaStr = "~sm.ns(Pseudotime)") 
 plot_pseudotime_heatmap(cds_sub[pseudotime_de$gene_short_name,],return_heatmap=T, hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,cluster_rows = F)
 
+## figure5 ECM gene heatmap
+p = plot_pseudotime_heatmap(cds_sub[highlight$Gene,],return_heatmap=T, hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,num_clusters = 3)
+highlight <- highlight[order(-highlight[,'epi.cytotrce.cor']),]
+pseudotime_de <- differentialGeneTest(cds_sub[highlight$Gene,], fullModelFormulaStr = "~sm.ns(Pseudotime)") 
+pseudotime_de <- subset(pseudotime_de, qval < 1e-2) 
+p = plot_pseudotime_heatmap(cds_sub[pseudotime_de$gene_short_name,],return_heatmap=T, hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,cluster_rows = T,num_clusters = 3)
+hp.genes <- p$tree_row$labels[p$tree_row$order]
+Time_diff_sig <- pseudotime_de[hp.genes, c("gene_short_name", "pval", "qval")]
+clusters <- cutree(p$tree_row, k = 3)
+clustering <- data.frame(clusters)
+colnames(clustering) <- "Gene_Clusters"
+clustering$gene_short_name <- rownames(clustering)
+mg <- clustering[hp.genes,c('Gene_Clusters','gene_short_name')]
+mg <- cbind(mg,Time_diff_sig)
+mg <- mg[,-2]
+p = plot_pseudotime_heatmap(cds_sub[c(mg$gene_short_name[39:48],mg$gene_short_name[33:38],mg$gene_short_name[1:32]),],return_heatmap=T, hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,cluster_rows = F)
 
-
+## figure5 TF heatmap
+tf_marker <- read.table(file = 'plotgene.txt')
+plot_pseudotime_heatmap(cds_sub[tf_marker$V1,],return_heatmap=T, hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = T,cluster_rows = F)
 
 
 

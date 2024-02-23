@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+### figure5 and sup_figure9 DPT ###
 # fundus and antrum 
 import numpy as np
 import pandas as pd
@@ -15,6 +16,7 @@ sc.tl.dpt(adata)
 sc.pl.embedding(adata,'X_diffmap',color=['dpt_pseudotime','cell.type'])
 pseudotime=adata.obs['dpt_pseudotime']
 pseudotime.to_csv('epiremovegland_pseudotime.csv',index=True)
+adata.write('epirmovegland.h5ad', compression='gzip')
 
 # antrum 
 import numpy as np
@@ -38,6 +40,7 @@ sc.tl.dpt(adata)
 sc.pl.embedding(adata,'X_diffmap',color=['dpt_pseudotime','cell.type'])
 pseudotime=adata.obs['dpt_pseudotime']
 pseudotime.to_csv('antral_pseudotime.csv',index=True)
+adata.write('antral.h5ad', compression='gzip')
 
 # fundus 
 import numpy as np
@@ -52,6 +55,7 @@ sc.tl.dpt(adata)
 sc.pl.embedding(adata,'X_diffmap',color=['dpt_pseudotime','cell.type'])
 pseudotime=adata.obs['dpt_pseudotime']
 pseudotime.to_csv('fundic_pseudotime.csv',index=True)
+adata.write('fudic.h5ad', compression='gzip')
 
 
 

@@ -60,7 +60,7 @@ p3 <- FeaturePlot(sample.integrated,features = 'Cluster2',cols = c('lightgrey','
 p4 <- FeaturePlot(sample.integrated,features = 'Cluster3',cols = c('lightgrey','red'),label = F) +ggtitle('lite_Neuronal')
 (p1|p2)/(p3|p4)
 
-# figure3 UMAP and Pearson correlation heatmap
+# figure3 in vivo and in vitro UMAP
 set.seed(20230518)
 sample <- subset(sample.integrated,downsample=2000) #23068
 list <- list(stomach,sample)
