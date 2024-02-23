@@ -6,6 +6,7 @@ library(patchwork)
 library(dplyr)
 library(stringr)
 library(ggsci)
+library(ComplexHeatmap)
 
 load(file = "D4.O.S1.1.filter.rdata") #10925
 load(file = "D4.O.S1.2.filter.rdata") #10723
@@ -96,7 +97,7 @@ DotPlot(sample.integrated, features =gene,cols = c("lightgrey",'#FF0000'))+ Rota
 ######## sup_figure7 featureplot
 FeaturePlot(sample.integrated,features = c('EPCAM','PAX6','COL3A1'),cols = c('lightgrey','red'),ncol = 3,label = F)
 
-######## subset epithelial cells 
+######## epithelial subtypes ------------------------------- 
 dt = sample.integrated[, sample.integrated$cell.type %in% "Epithelium" ]
 counts <- dt@assays$RNA@counts
 counts <- CreateSeuratObject(counts = counts)
@@ -170,9 +171,44 @@ save(counts,file = "epi.RData")
 save(counts,file = "epiremovedgland.RData")
 
 
+######## Mesenchymal subtypes ------------------------------- 
+mesen <- sample.integrated[, sample.integrated$cell.type %in% "Mesenchymal"] 
+DefaultAssay(mesen) <- 'integrated'
+mesen <- NormalizeData(mesen, normalization.method = "LogNormalize", scale.factor = 1e4) 
+mesen <- FindVariableFeatures(mesen, selection.method = 'vst', nfeatures = 2000)
+mesen <- ScaleData(mesen)
+mesen <- RunPCA(mesen) 
+mesen <- RunUMAP(mesen, reduction = "pca", dims = 1:20)
+mesen <- FindNeighbors(mesen, dims = 1:10)
+mesen <- FindClusters(mesen, resolution = seq(0.1,1,0.1) )
+DimPlot(mesen, reduction = "umap", group.by = "integrated_snn_res.0.1",raster=FALSE,label = TRUE)
+mesen$cell.type <- mesen$integrated_snn_res.0.1
+mesen$cell.type <- plyr::mapvalues(x=mesen$cell.type, from=c("0","2","1"), 
+                                   to=c("Mesenchymal#1","Mesenchymal#2","Mesenchymal#3"))
+### sup_figure8 DEG heatmap
+marker <- FindAllMarkers(mesen1, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
+marker %>%
+  group_by(cluster) %>%
+  top_n(n = 10, wt = avg_log2FC) -> top10
+DefaultAssay(mesen) <- 'RNA'
+mt.lab <- as.data.frame(t(as.matrix(GetAssayData(mesen, assay = "RNA", slot = "scale.data"))))
+group.by <- 'cell.type'
+mt.lab <- aggregate(mt.lab, by=list(mesen@meta.data[[group.by]]), FUN="mean")
+rownames(mt.lab) <- mt.lab$Group.1
+mt.lab <- t(mt.lab[,-1])
+cts <- as.matrix(mt.lab[top10$gene,])
+ComplexHeatmap::pheatmap(cts,show_colnames =T,show_rownames = T,
+                         color =colorRampPalette(rev(brewer.pal(n = 35, name ="RdYlBu")))(100),
+                         cluster_rows = F,
+                         cluster_cols = F,
+                         name= 'Scaled Expression')
 
 
 
+
+
+
+save(mesen,file = 'mesen.rdata')
 
 
 

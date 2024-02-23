@@ -34,11 +34,12 @@ VlnPlot(sce, features = c('COL6A1','FN1','FBLN1','LAMA4','FBN2','LAMB1',
         pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
 VlnPlot(sce, features = c('RSPO3','WNT5A','CXCL12'),pt.size = 0,assay = 'RNA',
         cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend() 
-# ECM genes 
+
+# sup_figure8 ecm gene heatmap
 highlight <- read_excel('highlight.xlsx') 
 DefaultAssay(sce) <- 'RNA'
 sce <- ScaleData(sce)
-mt <- as.data.frame(t(as.matrix(GetAssayData(epi, assay = "RNA", slot = "scale.data"))))
+mt <- as.data.frame(t(as.matrix(GetAssayData(sce, assay = "RNA", slot = "scale.data"))))
 group.by <- 'cell_type'
 mt <- aggregate(mt, by=list(sce@meta.data[[group.by]]), FUN="mean")
 rownames(mt) <- mt$Group.1
@@ -79,11 +80,12 @@ VlnPlot(sce, features = c('COL1A2','FN1','LAMB1','FBLN2','TNC','COL1A1','COL5A2'
 VlnPlot(sce, features = c('WNT5A','TGFB2','DLL1','DLL2',
                              'DLL3','DKK3'),pt.size = 0,assay = 'RNA',cols = col,
         flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
-# ECM genes 
+
+# sup_figure8 ecm gene heatmap
 highlight <- read_excel('highlight.xlsx') 
 DefaultAssay(sce) <- 'RNA'
 sce <- ScaleData(sce)
-mt <- as.data.frame(t(as.matrix(GetAssayData(epi, assay = "RNA", slot = "scale.data"))))
+mt <- as.data.frame(t(as.matrix(GetAssayData(sce, assay = "RNA", slot = "scale.data"))))
 group.by <- 'cell_type'
 mt <- aggregate(mt, by=list(sce@meta.data[[group.by]]), FUN="mean")
 rownames(mt) <- mt$Group.1
@@ -121,11 +123,11 @@ VlnPlot(sce, features = c('POU5F1','SOX17', 'GATA4', 'SOX2', 'NKX2-2'),pt.size =
 VlnPlot(epi, features = c('BMP2','BMP7','FGF2','FGF13','FGF14','IGF2'),pt.size = 0,
         assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'new.cell.type',split.by = 'new.cell.type')+NoLegend()
 
-# ECM genes 
+# sup_figure8 ecm gene heatmap 
 highlight <- read_excel('highlight.xlsx') 
 DefaultAssay(sce) <- 'RNA'
 sce <- ScaleData(sce)
-mt <- as.data.frame(t(as.matrix(GetAssayData(epi, assay = "RNA", slot = "scale.data"))))
+mt <- as.data.frame(t(as.matrix(GetAssayData(sce, assay = "RNA", slot = "scale.data"))))
 group.by <- 'cell_type'
 mt <- aggregate(mt, by=list(sce@meta.data[[group.by]]), FUN="mean")
 rownames(mt) <- mt$Group.1
