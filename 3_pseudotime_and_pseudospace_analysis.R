@@ -1,5 +1,5 @@
 ######## differentiation states among cells of epithelial, neural, and mesenchymal lineages
-######## CytoTRACE  ---------------------------------------------------------
+######## CytoTRACE  -------------------------------------------------
 library(Seurat)
 library(ggplot2)
 library(patchwork)
@@ -27,11 +27,14 @@ names(pheno) <- rownames(sce@meta.data)
 VEC=sce@reductions$umap@cell.embeddings
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
+# sup_figure8 classical genes violin plot
 VlnPlot(sce, features = c('COL1A2', 'COL3A1', 'SNAI1', 'SNAI2', 'TWIST1'),
         pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+# figure4 ecm genes violin plot
 VlnPlot(sce, features = c('COL6A1','FN1','FBLN1','LAMA4','FBN2','LAMB1',
                                   'COL1A1','EFEMP1','COL1A2','BGN','COL2A1','COL3A1'),
         pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+# figure4 secreted genes violin plot
 VlnPlot(sce, features = c('RSPO3','WNT5A','CXCL12'),pt.size = 0,assay = 'RNA',
         cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend() 
 
@@ -70,13 +73,16 @@ names(pheno) <- rownames(sce@meta.data)
 VEC=sce@reductions$umap@cell.embeddings
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
+# sup_figure8 classical genes violin plot
 VlnPlot(sce, features = c('SOX2','SOX11', 'PAX6', 'SOX10', 'CDH6', 'NGFR', 
                              'MAP2'),pt.size = 0,assay = 'RNA',cols = col,
         flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+# figure4 ecm genes violin plot
 VlnPlot(sce, features = c('COL1A2','FN1','LAMB1','FBLN2','TNC','COL1A1','COL5A2',
                              'VCAN','FBLN1','LAMA5','FBN2','COL2A1','LAMA4',
                              'COL11A2','POSTN','LGI4'),pt.size = 0,assay = 'RNA',
         cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+# figure4 secreted genes violin plot
 VlnPlot(sce, features = c('WNT5A','TGFB2','DLL1','DLL2',
                              'DLL3','DKK3'),pt.size = 0,assay = 'RNA',cols = col,
         flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
@@ -116,10 +122,13 @@ names(pheno) <- rownames(sce@meta.data)
 VEC=sce@reductions$umap@cell.embeddings
 plotCytoTRACE(results, phenotype = pheno,emb = VEC)
 
+# figure4 ecm genes violin plot
 VlnPlot(sce, features = c('COL1A2','FBLN1','COL4A6','COL4A2','LAMC1','MATN2',
                           'FBLN2','COL12A1','FN1','COL18A1','LAMB1','HSPG2','COL2A1','VTN','VCAN'),pt.size = 0,assay = 'RNA',cols = col,ncol = 5)
+# sup_figure8 classical genes violin plot
 VlnPlot(sce, features = c('POU5F1','SOX17', 'GATA4', 'SOX2', 'NKX2-2'),pt.size = 0,
         assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell.type',split.by = 'cell.type')+NoLegend()
+# figure4 secreted genes violin plot
 VlnPlot(epi, features = c('BMP2','BMP7','FGF2','FGF13','FGF14','IGF2'),pt.size = 0,
         assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'new.cell.type',split.by = 'new.cell.type')+NoLegend()
 
