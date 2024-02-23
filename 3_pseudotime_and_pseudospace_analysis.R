@@ -34,6 +34,22 @@ VlnPlot(sce, features = c('COL6A1','FN1','FBLN1','LAMA4','FBN2','LAMB1',
         pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
 VlnPlot(sce, features = c('RSPO3','WNT5A','CXCL12'),pt.size = 0,assay = 'RNA',
         cols = col,flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+# ECM genes 
+highlight <- read_excel('highlight.xlsx') 
+DefaultAssay(sce) <- 'RNA'
+sce <- ScaleData(sce)
+mt <- as.data.frame(t(as.matrix(GetAssayData(epi, assay = "RNA", slot = "scale.data"))))
+group.by <- 'cell_type'
+mt <- aggregate(mt, by=list(sce@meta.data[[group.by]]), FUN="mean")
+rownames(mt) <- mt$Group.1
+mt <- t(mt[,-1])
+highlight <- highlight[order(-highlight[,'mesen.cytotrce.cor']),]
+cts_mesen <- as.matrix(mt[highlight$Gene,])
+pheatmap(cts_mesen,show_colnames =T,show_rownames = T,color = viridis(8),
+         cluster_rows = F,
+         cluster_cols = F,
+         name= 'Scaled Expression')
+
 saveRDS(sce,file = 'mesen.rds')
 
 # neural lineage
@@ -63,6 +79,21 @@ VlnPlot(sce, features = c('COL1A2','FN1','LAMB1','FBLN2','TNC','COL1A1','COL5A2'
 VlnPlot(sce, features = c('WNT5A','TGFB2','DLL1','DLL2',
                              'DLL3','DKK3'),pt.size = 0,assay = 'RNA',cols = col,
         flip = T,stack = T,group.by = 'cell_type',split.by = 'cell_type')+NoLegend()
+# ECM genes 
+highlight <- read_excel('highlight.xlsx') 
+DefaultAssay(sce) <- 'RNA'
+sce <- ScaleData(sce)
+mt <- as.data.frame(t(as.matrix(GetAssayData(epi, assay = "RNA", slot = "scale.data"))))
+group.by <- 'cell_type'
+mt <- aggregate(mt, by=list(sce@meta.data[[group.by]]), FUN="mean")
+rownames(mt) <- mt$Group.1
+mt <- t(mt[,-1])
+highlight <- highlight[order(-highlight[,'neuron.cytotrce.cor']),]
+cts_neuron <- as.matrix(mt[highlight$Gene,])
+pheatmap(cts_neuron,show_colnames =T,show_rownames = T,color = viridis(8),
+         cluster_rows = F,
+         cluster_cols = F,
+         name= 'Scaled Expression')
 
 saveRDS(sce,file = 'neuron.rds')
 
@@ -90,11 +121,26 @@ VlnPlot(sce, features = c('POU5F1','SOX17', 'GATA4', 'SOX2', 'NKX2-2'),pt.size =
 VlnPlot(sce, features = c('COL1A2','FBLN1','COL4A6','COL4A2','LAMC1','MATN2',
                           'FBLN2','FN1','COL18A1','LAMB1','HSPG2','COL2A1','VTN','VCAN'),
         pt.size = 0,assay = 'RNA',cols = col,flip = T,stack = T,group.by = 'cell.type',split.by = 'cell.type')+NoLegend()
+# ECM genes 
+highlight <- read_excel('highlight.xlsx') 
+DefaultAssay(sce) <- 'RNA'
+sce <- ScaleData(sce)
+mt <- as.data.frame(t(as.matrix(GetAssayData(epi, assay = "RNA", slot = "scale.data"))))
+group.by <- 'cell_type'
+mt <- aggregate(mt, by=list(sce@meta.data[[group.by]]), FUN="mean")
+rownames(mt) <- mt$Group.1
+mt <- t(mt[,-1])
+highlight <- highlight[order(-highlight[,'epi.cytotrce.cor']),]
+cts_epi <- as.matrix(mt[highlight$Gene,])
+pheatmap(cts_epi,show_colnames =T,show_rownames = T,color = viridis(8),
+         cluster_rows = F,
+         cluster_cols = F,
+         name= 'Scaled Expression')
 
 saveRDS(sce,file = 'epi.rds')
 
 
-############# Pseudotime and pseudospace of Epithelium cells 
+############# Pseudotime and pseudospace of epithelial cells 
 library(monocle)
 library(URD)
 library(clusterProfiler)
@@ -119,12 +165,50 @@ plot_ordering_genes(mycds)
 mycds <- reduceDimension(mycds, max_components = 2, method = 'DDRTree')
 mycds <- orderCells(mycds)
 
-######### GO analysis ---------------------------------------------------------
-# antrum ---------
+
+#  supp_figure9 Epithelium DPT
+library(reticulate)
+library(viridisLite)
+
+load(file = 'epiremovedgland.rdata')
+DimPlot(seu, reduction = "diffmap", group.by = "cell.type", cols = col) 
+pseu <- read.csv(file = 'epiremovegland_pseudotime.csv')
+seu$dpt_pseudotime <- pseu$dpt_pseudotime
+tmp <- as.data.frame(seu@reductions$diffmap@cell.embeddings)
+tmp <- data.frame(tmp,seu@meta.data)
+ggplot(tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point() + facet_wrap(tmp$day)+
+        scale_color_gradientn(colors = viridis(8))
+ggplot(tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point(size=0.3)+
+        scale_color_gradientn(colors = viridis(8))+theme_classic() 
+
+# figure5 antrum DPT
 load(file = 'scanpy_reduction_antral.rdata')
+antral.pseu <- read.csv(file = 'antral_pseudotime.csv')
+DimPlot(antral, reduction = "diffmap", group.by = "cell.type", cols = col)
+antral$dpt_pseudotime <- antral.pseu$dpt_pseudotime
+tmp <- as.data.frame(antral@reductions$diffmap@cell.embeddings)
+tmp <- data.frame(tmp,antral@meta.data)
+ggplot(tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point() + facet_wrap(tmp$day)+
+        scale_color_gradientn(colors = viridis(8))+theme_classic()
+ggplot(tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point(size=0.3)+
+        scale_color_gradientn(colors = viridis(8))+theme_classic() 
+
+# figure5 fundus DPT
+load(file = 'scanpy_reduction_fundus.rdata')
+fundic.pseu <- read.csv(file = 'fundic_pseudotime.csv')
+DimPlot(fundus, reduction = "diffmap", group.by = "cell.type", cols = col)
+
+fundus$dpt_pseudotime <- fundic.pseu$dpt_pseudotime
+fundic_tmp <- as.data.frame(fundus@reductions$diffmap@cell.embeddings)
+fundic_tmp <- data.frame(fundic_tmp,fundus@meta.data)
+ggplot(fundic_tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point() + facet_wrap(fundic_tmp$day)+
+        scale_color_gradientn(colors = viridis(8))
+ggplot(fundic_tmp, aes(x = DC_1, y = DC_2, colour = dpt_pseudotime)) + geom_point(size=0.3)+
+        scale_color_gradientn(colors = viridis(8))+theme_classic() 
+
+# sup_figure9 heatmap of dynamic genes along antrum development trajectory  ---------
 mycds_antrum <- mycds[,pData(mycds)$lab %in% "Antral Epi"]
 pData(mycds_antrum)$Pseudotime <- antral$dpt_pseudotime
-
 pseudotime_de <- differentialGeneTest(mycds_antrum, fullModelFormulaStr = "~sm.ns(Pseudotime)") 
 pseudotime_de <- subset(pseudotime_de, qval < 1e-7) 
 pseudotime_de <- pseudotime_de[order(pseudotime_de$qval),]
@@ -145,7 +229,7 @@ mg$Gene_Clusters <- plyr::mapvalues(x=mg$Gene_Clusters, from=c('1','2','4','3'),
 mg <- mg[order(mg$Gene_Clusters),]
 p = plot_pseudotime_heatmap(mycds_antrum[mg$gene_short_name,],return_heatmap=T,
                             hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = F,cluster_rows = F)
-
+# GO analysis
 ids=bitr(mg$gene_short_name,'SYMBOL','ENTREZID','org.Hs.eg.db') 
 markers=merge(mg,ids,by.x='gene_short_name',by.y='SYMBOL') 
 markers <- markers[!duplicated(markers$gene_short_name),]
@@ -166,8 +250,8 @@ dotplot(bp) + theme(axis.text.x = element_text(
         angle = 45,
         vjust = 0.5, hjust = 0.5
 ))
-# fundus ---------
-load(file = 'scanpy_reduction_fundus.rdata')
+
+# sup_figure9 heatmap of dynamic genes along fundus development trajectory ---------
 mycds_fundus <- mycds[,pData(mycds)$lab %in% "Fundic Epi"]
 pData(mycds_fundus)$Pseudotime <- fundus$dpt_pseudotime
 fundus_pseudotime_de <- differentialGeneTest(mycds_fundus, fullModelFormulaStr = "~sm.ns(Pseudotime)") 
@@ -190,7 +274,7 @@ mg$Gene_Clusters <- plyr::mapvalues(x=mg$Gene_Clusters, from=c('3','1','4','2'),
 mg <- mg[order(mg$Gene_Clusters),]
 p = plot_pseudotime_heatmap(mycds_fundus[mg$gene_short_name,],return_heatmap=T,
                             hmcols = colorRampPalette(rev(brewer.pal(n = 7, name ="RdYlBu")))(100),show_rownames = F,cluster_rows = F)
-
+# GO analysis
 ids=bitr(mg$gene_short_name,'SYMBOL','ENTREZID','org.Hs.eg.db') 
 markers=merge(mg,ids,by.x='gene_short_name',by.y='SYMBOL') #
 markers <- markers[!duplicated(markers$gene_short_name),]
@@ -212,9 +296,8 @@ dotplot(bp) + theme(axis.text.x = element_text(
         vjust = 0.5, hjust = 0.5
 ))
 
-######## URD on D16 epithelial cells -----------------------------------------
-load(file = 'epiremovegland.rdata')
-d16 <- epiremovegland[, epiremovegland$day %in% "D16" ] #12447
+######## figure5 URD on D16 epithelial cells ------------------------------
+d16 <- epiremovegland[, epiremovegland$day %in% "D16" ] 
 d16$cell.type <- ordered(d16$cell.type,levels = c("Fundus#1","Fundus#2","Antrum#1","Antrum#2","Antrum#3"))
 
 de.gland <- d16

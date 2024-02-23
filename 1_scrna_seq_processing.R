@@ -1,4 +1,4 @@
-## Integrate all 3D samples 
+## Integrate all samples 
 rm(list = ls())
 library(Seurat)
 library(ggplot2)
@@ -58,12 +58,14 @@ sample.integrated <- FindClusters(sample.integrated, resolution = seq(0.1,1,0.1)
 
 save(sample.integrated,file = "sample.integrated.RData")
 
-######## Plot  -------------------------------------------------------------
+######## sup_figure7 UMAP 
 col=pal_igv('default',alpha = 1)(51)
 p1 <- DimPlot(sample.integrated, reduction = "umap", group.by = "day",label = F,raster=FALSE)+ scale_color_manual(values = col[35:51])
 p2 <- DimPlot(sample.integrated, reduction = "umap", group.by = "cell.type",label = F,raster=FALSE)+ scale_color_manual(values = col)
 p1|p2
 
+
+######## figure3 cell ratio image
 Cellratio <- prop.table(table(sample.integrated$cell.type, sample.integrated$day), margin = 2)
 Cellratio <- as.data.frame(Cellratio)
 Cellratio$cell_type <- Cellratio$Var1
@@ -75,6 +77,7 @@ ggplot(Cellratio) +
   scale_fill_manual(values = col)+
   theme(panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"))
 
+######## figure3 marker genes dotplot
 gene <- c('POU5F1','NANOG', #hPSC
           'SOX17','EOMES','GSC','MIXL1',#DE
           'CLDN4','CLDN18','GATA4','CDH1',#Epithelium
@@ -118,6 +121,8 @@ gene <- c('PDX1','GAST','MUC5AC','CLDN18','MUC6','KLF5',# Antrum
           'TFF2','TFF1','TFF3')# gland                                
 DefaultAssay(counts) <- 'RNA'
 DotPlot(counts, features =gene,cols = c("lightgrey",'#FF0000'))+ RotatedAxis() 
+DimPlot(counts, group.by = "cell.type",label = T,cols = col)
+
 
 Cellratio <- prop.table(table(counts$cell.type, counts$day), margin = 2)
 Cellratio <- as.data.frame(Cellratio)
@@ -130,7 +135,11 @@ ggplot(Cellratio) +
   scale_fill_manual(values = col[4:51])+
   theme(panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"))
 
-# DEG
+# sup_figure9 UMAP and featureplot 
+DimPlot(counts, group.by = "lab",label = T,cols = col[20:51])
+FeaturePlot(counts,features = c('PDX1','SOX2'),cols = c('lightgrey','red'),split.by = 'day',label = F)
+
+# figure5 DEG heatmap
 epiremovedgland <- counts[, counts$cell.type %in% c("Fundus#1","Fundus#2","Antrum#1","Antrum#2","Antrum#3")] 
 markers <- FindAllMarkers(epiremovedgland, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 DefaultAssay(epiremovedgland) <- 'RNA'

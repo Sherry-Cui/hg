@@ -1,4 +1,4 @@
-######## compare with the data in vivo 
+######## compare with in vivo data  
 library(Matrix)
 library(Seurat)
 library(ggsci)
@@ -34,7 +34,7 @@ p2 <- DimPlot(stomach, reduction = "umap", group.by = "Major_cell_type",raster=F
 p3 <- DimPlot(stomach, reduction = "umap", group.by = "Cell_type",raster=FALSE,label = F,cols = col)
 p1|p2|p3
 
-# addmodulescore
+# in vivo DEG addmodulescore
 Idents(stomach) <- 'Major_cell_type'
 markers <- FindAllMarkers(stomach, only.pos = TRUE, min.pct = 0.25, logfc.threshold = 0.25)
 Mesenchymal <- list(subset(markers,cluster=='Mesenchymal')$gene)
@@ -60,7 +60,7 @@ p3 <- FeaturePlot(sample.integrated,features = 'Cluster2',cols = c('lightgrey','
 p4 <- FeaturePlot(sample.integrated,features = 'Cluster3',cols = c('lightgrey','red'),label = F) +ggtitle('lite_Neuronal')
 (p1|p2)/(p3|p4)
 
-# heatmap 
+# figure3 UMAP and Pearson correlation heatmap
 set.seed(20230518)
 sample <- subset(sample.integrated,downsample=2000) #23068
 list <- list(stomach,sample)
@@ -78,14 +78,29 @@ integrated$lab1[1:13372] <- paste('lite',integrated$lab1[1:13372],sep = '_')
 integrated$lite <- 'in vitro'
 integrated$lite[1:13372] <- 'in vivo'
 
+mt.lab <- as.data.frame(t(as.matrix(GetAssayData(integrated, assay = "integrated", slot = "data"))))
+group.by <- 'lab1'
+mt.lab <- aggregate(mt.lab, by=list(integrated@meta.data[[group.by]]), FUN="mean")
+rownames(mt.lab) <- mt.lab$Group.1
+mt.lab <- t(mt.lab[,-1])
+mt.lab <- as.data.frame(mt.lab[,-c(1,4,6,9,10,18)]) 
+cor <- cor(mt.lab)
+pheatmap(cor,display_numbers=F,cluster_cols=T,cluster_rows=T, clustering_method = "single") 
+
+vitro <- integrated[, integrated$lite %in% "in vitro"] 
+vivo <- integrated[, Idents(integrated) %in% "in vivo"] 
 cols <- c("#ff4a46","#008941","#ffdbe5","#0000a6","#eec3ff","#456d75")
-Idents(vitro) <- 'day'
-d16 <- vitro[, Idents(vitro) %in% "D16"] 
+d16 <- vitro[, vitro$day %in% "D16"] 
 p1 <- DimPlot(d16, group.by = "lab1", pt.size=0.1,label = T,reduction = 'umap')+
   xlim(-13, 10) + ggtitle("In vitro(D16)") + scale_color_manual(values = col)
 p2 <- DimPlot(vivo, group.by = "lab1", pt.size=0.1,label = T) + ggtitle("In vivo") + scale_color_manual(values = cols)
 p1|p2
 
+# sup_figure7 UMAP
+integrated$day <- ordered(integrated$day,levels=c('D4','D7','D10','D13','D16','In vivo'))
+DimPlot(integrated, group.by = "lab1",split.by = 'day', pt.size=0.1,label = F,ncol = 3) + ggtitle("Day") + scale_color_manual(values = col)
+
+# figure3 FeaturePlot
 DefaultAssay(d16) <- 'RNA'
 DefaultAssay(vivo) <- 'RNA'
 p1 <- FeaturePlot(d16,features = c('CDH1','COL1A2','MAP2','FLT1'),cols = c('lightgrey','red'),ncol = 1,label = F)

@@ -1,4 +1,4 @@
-######## CellChat of D10 cells -------------------------------------------
+######## CellChat of day 10 cells -------------------------------------------
 library(CellChat)
 library(Seurat)
 library(ggplot2)
@@ -64,7 +64,7 @@ netVisual_aggregate(cellchat, signaling = 'ENHO',  vertex.receiver = vertex.rece
 netVisual_aggregate(cellchat, signaling = 'PROS',  vertex.receiver = vertex.receiver,pt.title=20,vertex.label.cex = 1.7)
 
 cellchat <- netAnalysis_computeCentrality(cellchat, slot.name = "netP")
-# plot
+# figure6
 netVisual_aggregate(cellchat, signaling = 'WNT',layout = 'hierarchy',pt.title=2,vertex.label.cex = 0.5)
 netVisual_heatmap(cellchat, signaling = 'WNT', color.heatmap = "Reds")
 netAnalysis_contribution(cellchat, signaling = 'WNT')

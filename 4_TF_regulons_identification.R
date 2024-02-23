@@ -1,4 +1,4 @@
-######## TF regulons identification of  subtypes 
+######## figure5 TF regulons identification of day 16 epithelial subtypes and heatmap
 library(SCENIC)
 library(Seurat)
 library(SCopeLoomR)
@@ -56,4 +56,4 @@ p1 <- Heatmap(
   cluster_row_slices           = FALSE,
   cluster_columns              = FALSE)
 
-
+# sup_figure9 regulation networks:cytoscape 
